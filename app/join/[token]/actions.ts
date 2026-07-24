@@ -1,7 +1,15 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+
+function siteOrigin() {
+  const h = headers();
+  const proto = h.get('x-forwarded-proto') ?? 'https';
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  return `${proto}://${host}`;
+}
 
 export async function acceptInvite(token: string, formData: FormData) {
   const fullName = String(formData.get('full_name') ?? '');
@@ -31,6 +39,7 @@ export async function acceptInvite(token: string, formData: FormData) {
         role: invite!.role,
         company_id: invite!.company_id,
       },
+      emailRedirectTo: `${siteOrigin()}/auth/callback`,
     },
   });
 

@@ -1,7 +1,15 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+
+function siteOrigin() {
+  const h = headers();
+  const proto = h.get('x-forwarded-proto') ?? 'https';
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  return `${proto}://${host}`;
+}
 
 export async function login(formData: FormData) {
   const email = String(formData.get('email') ?? '');
@@ -24,7 +32,10 @@ export async function bootstrapSignUp(formData: FormData) {
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName } },
+    options: {
+      data: { full_name: fullName },
+      emailRedirectTo: `${siteOrigin()}/auth/callback`,
+    },
   });
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
