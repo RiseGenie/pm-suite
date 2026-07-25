@@ -6,14 +6,40 @@ export interface NavLink {
   label: string;
 }
 
-export function Sidebar({ title, links }: { title: string; links: NavLink[] }) {
+export function Sidebar({
+  title,
+  links,
+  agencyLogoUrl,
+  companyLogoUrl,
+}: {
+  title: string;
+  links: NavLink[];
+  agencyLogoUrl?: string | null;
+  companyLogoUrl?: string | null;
+}) {
+  const hasLogos = agencyLogoUrl || companyLogoUrl;
+
   return (
     <aside
       className="w-60 shrink-0 flex flex-col justify-between min-h-screen p-4"
       style={{ backgroundColor: 'var(--color-sidebar-bg)', color: 'var(--color-sidebar-text)' }}
     >
       <div>
-        <div className="px-2 py-3 font-bold text-lg">{title}</div>
+        {hasLogos ? (
+          <div className="flex items-center gap-2 px-2 py-3">
+            {agencyLogoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={agencyLogoUrl} alt="Agency logo" className="h-8 w-8 object-contain rounded bg-white/10 p-0.5" />
+            )}
+            {companyLogoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={companyLogoUrl} alt="Company logo" className="h-8 w-8 object-contain rounded bg-white/10 p-0.5" />
+            )}
+            <span className="font-bold text-sm truncate">{title}</span>
+          </div>
+        ) : (
+          <div className="px-2 py-3 font-bold text-lg">{title}</div>
+        )}
         <nav className="mt-4 space-y-1">
           {links.map((link) => (
             <Link

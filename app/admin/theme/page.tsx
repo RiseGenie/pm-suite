@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
-import { updateCompanyTheme, resetCompanyTheme } from '@/app/_actions/theme';
+import { updateCompanyTheme, resetCompanyTheme, updateCompanyLogo } from '@/app/_actions/theme';
 import { ThemeCustomizerForm } from '@/components/ThemeCustomizerForm';
 import { SubmitButton } from '@/components/SubmitButton';
 import type { CompanyTheme } from '@/lib/types';
@@ -16,6 +16,7 @@ export default async function ThemePage() {
 
   const action = updateCompanyTheme.bind(null, profile!.company_id!);
   const reset = resetCompanyTheme.bind(null, profile!.company_id!);
+  const logoAction = updateCompanyLogo.bind(null, profile!.company_id!);
 
   return (
     <div className="space-y-4">
@@ -30,7 +31,14 @@ export default async function ThemePage() {
       <p className="text-sm text-muted -mt-2">
         Every color, font and shape here applies instantly across your whole workspace for all your users.
       </p>
-      {theme && <ThemeCustomizerForm theme={theme as CompanyTheme} action={action} />}
+      {theme && (
+        <ThemeCustomizerForm
+          theme={theme as CompanyTheme}
+          action={action}
+          companyId={profile!.company_id!}
+          logoAction={logoAction}
+        />
+      )}
     </div>
   );
 }

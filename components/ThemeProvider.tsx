@@ -23,6 +23,7 @@ const VAR_MAP: Record<keyof CompanyTheme, string> = {
   font_family: '--font-family',
   radius: '--radius',
   density: '',
+  timezone: '',
   custom_css: '',
 };
 

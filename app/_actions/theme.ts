@@ -33,12 +33,24 @@ export async function updateCompanyTheme(companyId: string, formData: FormData) 
   if (radius) update.radius = String(radius);
   const density = formData.get('density');
   if (density) update.density = String(density);
+  const timezone = formData.get('timezone');
+  if (timezone) update.timezone = String(timezone);
   const customCss = formData.get('custom_css');
   update.custom_css = customCss ? String(customCss) : '';
 
   await supabase.from('company_themes').update(update).eq('company_id', companyId);
 
   revalidatePath('/admin/theme');
+  revalidatePath('/dashboard/projects');
+  revalidatePath(`/super-admin/companies/${companyId}`);
+}
+
+export async function updateCompanyLogo(companyId: string, logoUrl: string) {
+  'use server';
+  const supabase = createClient();
+  await supabase.from('company_themes').update({ logo_url: logoUrl }).eq('company_id', companyId);
+  revalidatePath('/admin/theme');
+  revalidatePath('/dashboard/projects');
   revalidatePath(`/super-admin/companies/${companyId}`);
 }
 

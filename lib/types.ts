@@ -45,7 +45,13 @@ export interface CompanyTheme {
   font_family: string;
   radius: string;
   density: string;
+  timezone: string;
   custom_css: string | null;
+}
+
+export interface PlatformSettings {
+  logo_url: string | null;
+  timezone: string;
 }
 
 export interface Project {

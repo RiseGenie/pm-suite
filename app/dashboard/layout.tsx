@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/Sidebar';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { DashboardMain } from '@/components/DashboardMain';
 import type { CompanyTheme } from '@/lib/types';
 import { getCurrentProfile } from '@/lib/auth';
 
@@ -11,11 +12,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!profile.company_id) redirect('/super-admin');
 
   const supabase = createClient();
-  const { data: theme } = await supabase
-    .from('company_themes')
-    .select('*')
-    .eq('company_id', profile.company_id)
-    .single();
+  const [{ data: theme }, { data: platformSettings }] = await Promise.all([
+    supabase.from('company_themes').select('*').eq('company_id', profile.company_id).single(),
+    supabase.from('platform_settings').select('*').eq('id', true).single(),
+  ]);
 
   const links = [
     { href: '/dashboard/projects', label: 'Projects' },
@@ -33,11 +33,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
       : []),
   ];
 
+  const timezone = theme?.timezone || platformSettings?.timezone || 'UTC';
+
   return (
     <div className="flex">
       <ThemeProvider theme={theme as CompanyTheme | null} />
-      <Sidebar title="PM Suite" links={links} />
-      <main className="flex-1 p-8 max-w-6xl">{children}</main>
+      <Sidebar
+        title="PM Suite"
+        links={links}
+        agencyLogoUrl={platformSettings?.logo_url}
+        companyLogoUrl={theme?.logo_url}
+      />
+      <DashboardMain timezone={timezone}>{children}</DashboardMain>
     </div>
   );
 }

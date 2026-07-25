@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/Sidebar';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { DashboardMain } from '@/components/DashboardMain';
 import type { CompanyTheme } from '@/lib/types';
 import { getCurrentProfile } from '@/lib/auth';
 
@@ -18,17 +19,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!profile?.company_id) redirect('/no-access');
 
   const supabase = createClient();
-  const { data: theme } = await supabase
-    .from('company_themes')
-    .select('*')
-    .eq('company_id', profile.company_id)
-    .single();
+  const [{ data: theme }, { data: platformSettings }] = await Promise.all([
+    supabase.from('company_themes').select('*').eq('company_id', profile.company_id).single(),
+    supabase.from('platform_settings').select('*').eq('id', true).single(),
+  ]);
+
+  const timezone = theme?.timezone || platformSettings?.timezone || 'UTC';
 
   return (
     <div className="flex">
       <ThemeProvider theme={theme as CompanyTheme | null} />
-      <Sidebar title="Company Admin" links={LINKS} />
-      <main className="flex-1 p-8 max-w-6xl">{children}</main>
+      <Sidebar
+        title="Company Admin"
+        links={LINKS}
+        agencyLogoUrl={platformSettings?.logo_url}
+        companyLogoUrl={theme?.logo_url}
+      />
+      <DashboardMain timezone={timezone}>{children}</DashboardMain>
     </div>
   );
 }

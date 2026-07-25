@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import type { CompanyTheme } from '@/lib/types';
 import { SubmitButton } from '@/components/SubmitButton';
+import { LogoUploader } from '@/components/LogoUploader';
+import { listTimezones } from '@/lib/timezones';
 
 const COLOR_GROUPS: { label: string; fields: { key: keyof CompanyTheme; label: string }[] }[] = [
   {
@@ -48,100 +50,127 @@ const COLOR_GROUPS: { label: string; fields: { key: keyof CompanyTheme; label: s
 export function ThemeCustomizerForm({
   theme,
   action,
+  companyId,
+  logoAction,
 }: {
   theme: CompanyTheme;
   action: (formData: FormData) => void;
+  companyId: string;
+  logoAction: (url: string) => Promise<void> | void;
 }) {
   const [preview, setPreview] = useState<CompanyTheme>(theme);
+  const timezones = listTimezones();
 
   function set<K extends keyof CompanyTheme>(key: K, value: CompanyTheme[K]) {
     setPreview((p) => ({ ...p, [key]: value }));
   }
 
   return (
-    <form action={action} className="grid grid-cols-3 gap-6">
+    <div className="grid grid-cols-3 gap-6">
       <div className="col-span-2 space-y-6">
-        {COLOR_GROUPS.map((group) => (
-          <div key={group.label} className="card p-5">
-            <h3 className="font-semibold mb-3">{group.label}</h3>
-            <div className="grid grid-cols-3 gap-4">
-              {group.fields.map((f) => (
-                <div key={f.key}>
-                  <label className="text-xs font-medium text-muted">{f.label}</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      type="color"
-                      name={f.key}
-                      defaultValue={preview[f.key] as string}
-                      onChange={(e) => set(f.key, e.target.value as never)}
-                      className="h-9 w-9 rounded border border-slate-200 cursor-pointer"
-                    />
-                    <input
-                      value={preview[f.key] as string}
-                      onChange={(e) => set(f.key, e.target.value as never)}
-                      className="input text-xs"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
         <div className="card p-5">
-          <h3 className="font-semibold mb-3">Typography &amp; shape</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-medium text-muted">Font family</label>
-              <select
-                name="font_family"
-                defaultValue={theme.font_family}
-                onChange={(e) => set('font_family', e.target.value)}
-                className="input mt-1"
-              >
-                <option value="Inter, system-ui, sans-serif">Inter</option>
-                <option value="'Segoe UI', system-ui, sans-serif">Segoe UI</option>
-                <option value="Georgia, serif">Georgia (serif)</option>
-                <option value="'Courier New', monospace">Courier New (mono)</option>
-                <option value="Poppins, system-ui, sans-serif">Poppins</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted">Corner radius</label>
-              <select
-                name="radius"
-                defaultValue={theme.radius}
-                onChange={(e) => set('radius', e.target.value)}
-                className="input mt-1"
-              >
-                <option value="0px">Square</option>
-                <option value="0.25rem">Subtle</option>
-                <option value="0.5rem">Rounded</option>
-                <option value="1rem">Very rounded</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted">Density</label>
-              <select name="density" defaultValue={theme.density} className="input mt-1">
-                <option value="comfortable">Comfortable</option>
-                <option value="compact">Compact</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-5">
-          <h3 className="font-semibold mb-3">Custom CSS (advanced)</h3>
-          <textarea
-            name="custom_css"
-            defaultValue={theme.custom_css ?? ''}
-            rows={6}
-            placeholder=".btn-primary { text-transform: uppercase; }"
-            className="input font-mono text-xs"
+          <h3 className="font-semibold mb-3">Branding</h3>
+          <LogoUploader
+            scopeFolder={companyId}
+            currentUrl={theme.logo_url}
+            action={logoAction}
+            label="Company logo"
           />
         </div>
 
-        <SubmitButton pendingText="Saving theme…">Save theme</SubmitButton>
+        <form action={action} className="space-y-6">
+          {COLOR_GROUPS.map((group) => (
+            <div key={group.label} className="card p-5">
+              <h3 className="font-semibold mb-3">{group.label}</h3>
+              <div className="grid grid-cols-3 gap-4">
+                {group.fields.map((f) => (
+                  <div key={f.key}>
+                    <label className="text-xs font-medium text-muted">{f.label}</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <input
+                        type="color"
+                        name={f.key}
+                        defaultValue={preview[f.key] as string}
+                        onChange={(e) => set(f.key, e.target.value as never)}
+                        className="h-9 w-9 rounded border border-slate-200 cursor-pointer"
+                      />
+                      <input
+                        value={preview[f.key] as string}
+                        onChange={(e) => set(f.key, e.target.value as never)}
+                        className="input text-xs"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div className="card p-5">
+            <h3 className="font-semibold mb-3">Typography &amp; shape</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-muted">Font family</label>
+                <select
+                  name="font_family"
+                  defaultValue={theme.font_family}
+                  onChange={(e) => set('font_family', e.target.value)}
+                  className="input mt-1"
+                >
+                  <option value="Inter, system-ui, sans-serif">Inter</option>
+                  <option value="'Segoe UI', system-ui, sans-serif">Segoe UI</option>
+                  <option value="Georgia, serif">Georgia (serif)</option>
+                  <option value="'Courier New', monospace">Courier New (mono)</option>
+                  <option value="Poppins, system-ui, sans-serif">Poppins</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted">Corner radius</label>
+                <select
+                  name="radius"
+                  defaultValue={theme.radius}
+                  onChange={(e) => set('radius', e.target.value)}
+                  className="input mt-1"
+                >
+                  <option value="0px">Square</option>
+                  <option value="0.25rem">Subtle</option>
+                  <option value="0.5rem">Rounded</option>
+                  <option value="1rem">Very rounded</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted">Density</label>
+                <select name="density" defaultValue={theme.density} className="input mt-1">
+                  <option value="comfortable">Comfortable</option>
+                  <option value="compact">Compact</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted">Timezone</label>
+                <select name="timezone" defaultValue={theme.timezone} className="input mt-1">
+                  {timezones.map((tz) => (
+                    <option key={tz} value={tz}>
+                      {tz}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-5">
+            <h3 className="font-semibold mb-3">Custom CSS (advanced)</h3>
+            <textarea
+              name="custom_css"
+              defaultValue={theme.custom_css ?? ''}
+              rows={6}
+              placeholder=".btn-primary { text-transform: uppercase; }"
+              className="input font-mono text-xs"
+            />
+          </div>
+
+          <SubmitButton pendingText="Saving theme…">Save theme</SubmitButton>
+        </form>
       </div>
 
       <div>
@@ -202,6 +231,6 @@ export function ThemeCustomizerForm({
           </div>
         </div>
       </div>
-    </form>
+    </div>
   );
 }

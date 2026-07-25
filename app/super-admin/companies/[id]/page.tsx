@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { inviteCompanyAdmin, toggleCompanyActive, cancelInvite, resendInvite, changeUserRole } from '../actions';
-import { updateCompanyTheme } from '@/app/_actions/theme';
+import { updateCompanyTheme, updateCompanyLogo } from '@/app/_actions/theme';
 import { ThemeCustomizerForm } from '@/components/ThemeCustomizerForm';
 import { SubmitButton } from '@/components/SubmitButton';
 import { RoleSelect } from '@/components/RoleSelect';
@@ -26,6 +26,7 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
   const toggleAction = toggleCompanyActive.bind(null, company.id, company.is_active);
   const inviteAction = inviteCompanyAdmin.bind(null, company.id);
   const themeAction = updateCompanyTheme.bind(null, company.id);
+  const logoAction = updateCompanyLogo.bind(null, company.id);
 
   return (
     <div className="space-y-8">
@@ -99,7 +100,9 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
 
       <div>
         <h2 className="font-semibold mb-3">Theme (owner override)</h2>
-        {theme && <ThemeCustomizerForm theme={theme as CompanyTheme} action={themeAction} />}
+        {theme && (
+          <ThemeCustomizerForm theme={theme as CompanyTheme} action={themeAction} companyId={company.id} logoAction={logoAction} />
+        )}
       </div>
     </div>
   );
