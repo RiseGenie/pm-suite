@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { inviteCompanyAdmin, toggleCompanyActive, cancelInvite, resendInvite } from '../actions';
 import { updateCompanyTheme } from '@/app/_actions/theme';
 import { ThemeCustomizerForm } from '@/components/ThemeCustomizerForm';
+import { SubmitButton } from '@/components/SubmitButton';
 import type { CompanyTheme } from '@/lib/types';
 
 export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
@@ -28,9 +29,9 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
           <p className="text-sm text-muted">{company.slug}</p>
         </div>
         <form action={toggleAction}>
-          <button className={`btn ${company.is_active ? 'btn-danger' : 'btn-primary'}`} type="submit">
+          <SubmitButton className={`btn ${company.is_active ? 'btn-danger' : 'btn-primary'}`} pendingText="Updating…">
             {company.is_active ? 'Suspend company' : 'Reactivate company'}
-          </button>
+          </SubmitButton>
         </form>
       </div>
 
@@ -52,9 +53,9 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
           <h2 className="font-semibold mb-3">Invite a company admin</h2>
           <form action={inviteAction} className="flex gap-2">
             <input name="admin_email" type="email" required placeholder="admin@client.com" className="input" />
-            <button className="btn btn-primary shrink-0" type="submit">
+            <SubmitButton className="btn btn-primary shrink-0" pendingText="Sending…">
               Send invite
-            </button>
+            </SubmitButton>
           </form>
           <div className="mt-4 space-y-2">
             {invites?.map((i) => (
@@ -67,14 +68,14 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
                   {!i.accepted_at && (
                     <>
                       <form action={resendInvite.bind(null, i.id, company.id)}>
-                        <button className="text-muted hover:text-primary" type="submit">
+                        <SubmitButton className="text-muted hover:text-primary" pendingText="Sending…">
                           Resend
-                        </button>
+                        </SubmitButton>
                       </form>
                       <form action={cancelInvite.bind(null, i.id, company.id)}>
-                        <button className="text-muted hover:text-danger" type="submit">
+                        <SubmitButton className="text-muted hover:text-danger" pendingText="Cancelling…">
                           Cancel
-                        </button>
+                        </SubmitButton>
                       </form>
                     </>
                   )}

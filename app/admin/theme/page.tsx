@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { updateCompanyTheme, resetCompanyTheme } from '@/app/_actions/theme';
 import { ThemeCustomizerForm } from '@/components/ThemeCustomizerForm';
+import { SubmitButton } from '@/components/SubmitButton';
 import type { CompanyTheme } from '@/lib/types';
 
 export default async function ThemePage() {
@@ -21,9 +22,9 @@ export default async function ThemePage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Theme customizer</h1>
         <form action={reset}>
-          <button className="btn btn-secondary text-xs" type="submit">
+          <SubmitButton className="btn btn-secondary text-xs" pendingText="Resetting…">
             Reset to defaults
-          </button>
+          </SubmitButton>
         </form>
       </div>
       <p className="text-sm text-muted -mt-2">

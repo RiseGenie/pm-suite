@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { createProject } from './actions';
+import { SubmitButton } from '@/components/SubmitButton';
 
 export default async function ProjectsPage() {
   const { profile } = await getCurrentProfile();
@@ -46,9 +47,9 @@ export default async function ProjectsPage() {
             <label className="text-sm font-medium">Color</label>
             <input name="color" type="color" defaultValue="#4f46e5" className="h-9 w-16 mt-1" />
           </div>
-          <button className="btn btn-primary w-full" type="submit">
+          <SubmitButton className="btn btn-primary w-full" pendingText="Creating…">
             Create project
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

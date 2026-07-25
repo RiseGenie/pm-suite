@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { createCompany } from './actions';
+import { SubmitButton } from '@/components/SubmitButton';
 
 export default async function CompaniesPage({ searchParams }: { searchParams: { error?: string } }) {
   const supabase = createClient();
@@ -53,9 +54,9 @@ export default async function CompaniesPage({ searchParams }: { searchParams: { 
             <input name="admin_email" type="email" className="input mt-1" placeholder="admin@client.com" />
             <p className="text-xs text-muted mt-1">Sends an invite link to become the company admin.</p>
           </div>
-          <button className="btn btn-primary w-full" type="submit">
+          <SubmitButton className="btn btn-primary w-full" pendingText="Creating…">
             Create company
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

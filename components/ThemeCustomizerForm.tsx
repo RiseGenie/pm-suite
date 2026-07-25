@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { CompanyTheme } from '@/lib/types';
+import { SubmitButton } from '@/components/SubmitButton';
 
 const COLOR_GROUPS: { label: string; fields: { key: keyof CompanyTheme; label: string }[] }[] = [
   {
@@ -140,9 +141,7 @@ export function ThemeCustomizerForm({
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">
-          Save theme
-        </button>
+        <SubmitButton pendingText="Saving theme…">Save theme</SubmitButton>
       </div>
 
       <div>

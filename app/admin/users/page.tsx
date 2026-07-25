@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { inviteMember, toggleMemberActive } from './actions';
+import { SubmitButton } from '@/components/SubmitButton';
 
 export default async function TeamPage() {
   const { profile } = await getCurrentProfile();
@@ -36,9 +37,9 @@ export default async function TeamPage() {
                     <span className="badge bg-slate-100 text-slate-600">{m.role}</span>
                   </div>
                   <form action={toggle}>
-                    <button className="text-xs text-muted hover:text-danger" type="submit">
+                    <SubmitButton className="text-xs text-muted hover:text-danger" pendingText="Updating…">
                       {m.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
+                    </SubmitButton>
                   </form>
                 </div>
               );
@@ -60,9 +61,9 @@ export default async function TeamPage() {
                 <option value="company_admin">Company admin</option>
               </select>
             </div>
-            <button className="btn btn-primary w-full" type="submit">
+            <SubmitButton className="btn btn-primary w-full" pendingText="Sending…">
               Send invite
-            </button>
+            </SubmitButton>
           </form>
           <div className="mt-4 space-y-1">
             {invites?.map((i) => (

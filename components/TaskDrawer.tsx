@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Task, TaskComment, Profile } from '@/lib/types';
 import { updateTask, deleteTask, addComment, deleteAttachment } from '@/app/dashboard/projects/[id]/actions';
 import { AttachmentUploader } from '@/components/AttachmentUploader';
+import { SubmitButton } from '@/components/SubmitButton';
 
 interface AttachmentWithUrl {
   id: string;
@@ -40,9 +41,9 @@ export function TaskDrawer({
             ← Close
           </Link>
           <form action={deleteAction}>
-            <button className="text-xs text-danger" type="submit">
+            <SubmitButton className="text-xs text-danger" pendingText="Deleting…">
               Delete task
-            </button>
+            </SubmitButton>
           </form>
         </div>
 
@@ -81,9 +82,7 @@ export function TaskDrawer({
               </select>
             </div>
           </div>
-          <button className="btn btn-primary" type="submit">
-            Save changes
-          </button>
+          <SubmitButton pendingText="Saving…">Save changes</SubmitButton>
         </form>
 
         <div>
@@ -95,9 +94,9 @@ export function TaskDrawer({
                   {a.file_name}
                 </a>
                 <form action={deleteAttachment.bind(null, a.id, a.file_path, projectId)}>
-                  <button className="text-muted hover:text-danger" type="submit">
+                  <SubmitButton className="text-muted hover:text-danger" pendingText="Removing…">
                     Remove
-                  </button>
+                  </SubmitButton>
                 </form>
               </div>
             ))}
@@ -119,9 +118,9 @@ export function TaskDrawer({
           </div>
           <form action={commentAction} className="flex gap-2">
             <input name="body" placeholder="Write a comment…" className="input" />
-            <button className="btn btn-primary shrink-0" type="submit">
+            <SubmitButton className="btn btn-primary shrink-0" pendingText="Posting…">
               Post
-            </button>
+            </SubmitButton>
           </form>
         </div>
       </div>

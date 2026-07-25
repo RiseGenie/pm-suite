@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
 import { useDraggable } from '@dnd-kit/core';
 import Link from 'next/link';
 import type { Task, TaskStatus } from '@/lib/types';
 import { updateTaskStatus, createTask } from '@/app/dashboard/projects/[id]/actions';
+import { SubmitButton } from '@/components/SubmitButton';
 
 const COLUMNS: { key: TaskStatus; label: string }[] = [
   { key: 'todo', label: 'To do' },
@@ -94,9 +95,9 @@ function Column({
         >
           <input name="title" autoFocus placeholder="Task title" className="input text-xs" />
           <div className="flex gap-2 mt-2">
-            <button className="btn btn-primary text-xs" type="submit">
+            <SubmitButton className="btn btn-primary text-xs" pendingText="Adding…">
               Add
-            </button>
+            </SubmitButton>
             <button type="button" className="btn btn-secondary text-xs" onClick={() => setShowForm(false)}>
               Cancel
             </button>
@@ -118,6 +119,10 @@ export function Board({ tasks, projectId }: { tasks: TaskWithAssignee[]; project
   const [localTasks, setLocalTasks] = useState(tasks);
   const [, startTransition] = useTransition();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+
+  useEffect(() => {
+    setLocalTasks(tasks);
+  }, [tasks]);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
