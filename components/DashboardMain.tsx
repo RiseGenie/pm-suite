@@ -20,7 +20,7 @@ export function DashboardMain({
         className="flex justify-end items-center gap-3 px-8 py-3 border-b"
         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
       >
-        <RoleSelect action={updateMyTimezone} currentRole={myTimezone ?? ''} options={options} />
+        <RoleSelect action={updateMyTimezone} currentRole={myTimezone ?? ''} options={options} fieldName="timezone" />
         <LiveClock timezone={timezone} />
       </header>
       <main className="flex-1 p-8 max-w-6xl">{children}</main>

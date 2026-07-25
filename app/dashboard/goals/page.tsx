@@ -47,6 +47,7 @@ export default async function GoalsPage() {
                     action={updateGoalStatus.bind(null, g.id)}
                     currentRole={g.status}
                     options={STATUS_OPTIONS}
+                    fieldName="status"
                   />
                 </div>
               </div>

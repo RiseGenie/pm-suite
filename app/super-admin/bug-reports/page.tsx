@@ -44,6 +44,7 @@ export default async function BugReportsPage() {
                     action={updateBugReportStatus.bind(null, r.id)}
                     currentRole={r.status}
                     options={STATUS_OPTIONS}
+                    fieldName="status"
                   />
                 </div>
               </div>

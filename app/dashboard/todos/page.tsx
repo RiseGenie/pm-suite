@@ -63,6 +63,7 @@ export default async function TodosPage() {
                       action={updateTodoStatus.bind(null, t.id)}
                       currentRole={t.status}
                       options={STATUS_OPTIONS}
+                      fieldName="status"
                     />
                     <form action={convertTaskToIssue.bind(null, t.id)}>
                       <SubmitButton className="btn btn-secondary text-xs" pendingText="Converting…">

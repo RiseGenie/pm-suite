@@ -60,6 +60,7 @@ export default async function IssuesPage() {
                         action={updateIssueStatus.bind(null, i.id)}
                         currentRole={i.status}
                         options={STATUS_OPTIONS}
+                        fieldName="status"
                       />
                       {!isConverted && (
                         <form action={convertIssueToTodo.bind(null, i.id)}>

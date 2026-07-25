@@ -13,18 +13,20 @@ export function RoleSelect({
   currentRole,
   options,
   disabled,
+  fieldName = 'role',
 }: {
   action: (formData: FormData) => void;
   currentRole: string;
   options: { value: string; label: string }[];
   disabled?: boolean;
+  fieldName?: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <form ref={formRef} action={action} className="flex items-center gap-2">
       <select
-        name="role"
+        name={fieldName}
         defaultValue={currentRole}
         disabled={disabled}
         onChange={() => formRef.current?.requestSubmit()}
