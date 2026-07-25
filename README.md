@@ -33,6 +33,16 @@ Multi-tenant project management platform with three tiers of access:
   immediately and tracked to resolution at `/super-admin/bug-reports`
 - `company_stats` (view) — per-company rollup (users/projects/tasks/completion/open bugs/last
   activity) powering the owner's overview table and the report generator
+- `issues` — company-wide issue tracker; convertible to/from todos in either direction
+  (`source_task_id` / `tasks.source_issue_id`) at `/dashboard/issues`
+- `tasks.project_id` is nullable — a task with no project is a company-wide **todo**
+  (`/dashboard/todos`), alongside the existing per-project Kanban boards
+- `goals` — company goals with a target date and status, at `/dashboard/goals`
+- `huddles` / `huddle_discussion_items` — live meeting sessions at `/dashboard/huddle`. Starting
+  one opens a shared timer; anyone can pull in issues/todos/goals to discuss (with notes) or
+  assign brand-new todos on the spot. Stopping it emails every active company member a recap
+  (what was discussed + newly assigned todos) via Resend. Only one huddle can be active per
+  company at a time (`huddles_one_active_per_company` unique index)
 
 **The first account ever created becomes the owner (`super_admin`)** automatically (see the
 `handle_new_user` trigger in `supabase/migrations/004_bootstrap_and_invites.sql`). Everyone else

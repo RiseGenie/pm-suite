@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Task, TaskComment, Profile } from '@/lib/types';
 import { updateTask, deleteTask, addComment, deleteAttachment } from '@/app/dashboard/projects/[id]/actions';
+import { convertTaskToIssue } from '@/app/dashboard/issues/actions';
 import { AttachmentUploader } from '@/components/AttachmentUploader';
 import { SubmitButton } from '@/components/SubmitButton';
 
@@ -40,11 +41,22 @@ export function TaskDrawer({
           <Link href={`/dashboard/projects/${projectId}`} className="text-sm text-muted hover:text-text">
             ← Close
           </Link>
-          <form action={deleteAction}>
-            <SubmitButton className="text-xs text-danger" pendingText="Deleting…">
-              Delete task
-            </SubmitButton>
-          </form>
+          <div className="flex items-center gap-3">
+            {task.source_issue_id ? (
+              <span className="badge bg-blue-100 text-blue-700">From an issue</span>
+            ) : (
+              <form action={convertTaskToIssue.bind(null, task.id)}>
+                <SubmitButton className="text-xs text-muted hover:text-primary" pendingText="Converting…">
+                  Convert to issue
+                </SubmitButton>
+              </form>
+            )}
+            <form action={deleteAction}>
+              <SubmitButton className="text-xs text-danger" pendingText="Deleting…">
+                Delete task
+              </SubmitButton>
+            </form>
+          </div>
         </div>
 
         <form action={updateAction} className="space-y-3">

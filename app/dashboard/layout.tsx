@@ -19,6 +19,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const links = [
     { href: '/dashboard/projects', label: 'Projects' },
+    { href: '/dashboard/todos', label: 'Todos' },
+    { href: '/dashboard/issues', label: 'Issues' },
+    { href: '/dashboard/goals', label: 'Goals' },
+    { href: '/dashboard/huddle', label: 'Huddle' },
     ...(profile.role === 'company_admin'
       ? [
           { href: '/admin', label: 'Admin dashboard' },
