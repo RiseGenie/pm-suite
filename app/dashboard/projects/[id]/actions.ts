@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 import type { TaskStatus } from '@/lib/types';
 
 export async function createTask(projectId: string, status: TaskStatus, formData: FormData) {
@@ -19,25 +20,50 @@ export async function createTask(projectId: string, status: TaskStatus, formData
     .eq('project_id', projectId)
     .eq('status', status);
 
-  await supabase.from('tasks').insert({
-    project_id: projectId,
-    company_id: profile.company_id,
-    title,
-    status,
-    position: count ?? 0,
-    created_by: userId,
-  });
+  const { data: task } = await supabase
+    .from('tasks')
+    .insert({
+      project_id: projectId,
+      company_id: profile.company_id,
+      title,
+      status,
+      position: count ?? 0,
+      created_by: userId,
+    })
+    .select()
+    .single();
+
+  if (task) {
+    await logActivity({
+      companyId: profile.company_id,
+      actorId: userId,
+      action: 'task.created',
+      entityType: 'task',
+      entityId: task.id,
+      metadata: { title, project_id: projectId },
+    });
+  }
 
   revalidatePath(`/dashboard/projects/${projectId}`);
 }
 
 export async function updateTaskStatus(taskId: string, projectId: string, status: TaskStatus, position: number) {
+  const { profile, userId } = await getCurrentProfile();
   const supabase = createClient();
   await supabase.from('tasks').update({ status, position }).eq('id', taskId);
+  await logActivity({
+    companyId: profile?.company_id ?? null,
+    actorId: userId,
+    action: 'task.status_changed',
+    entityType: 'task',
+    entityId: taskId,
+    metadata: { status },
+  });
   revalidatePath(`/dashboard/projects/${projectId}`);
 }
 
 export async function updateTask(taskId: string, projectId: string, formData: FormData) {
+  const { profile, userId } = await getCurrentProfile();
   const supabase = createClient();
   const update: Record<string, unknown> = {
     title: String(formData.get('title') ?? '').trim(),
@@ -47,21 +73,43 @@ export async function updateTask(taskId: string, projectId: string, formData: Fo
     due_date: formData.get('due_date') ? String(formData.get('due_date')) : null,
   };
   await supabase.from('tasks').update(update).eq('id', taskId);
+  await logActivity({
+    companyId: profile?.company_id ?? null,
+    actorId: userId,
+    action: 'task.updated',
+    entityType: 'task',
+    entityId: taskId,
+  });
   revalidatePath(`/dashboard/projects/${projectId}`);
 }
 
 export async function deleteTask(taskId: string, projectId: string) {
+  const { profile, userId } = await getCurrentProfile();
   const supabase = createClient();
   await supabase.from('tasks').delete().eq('id', taskId);
+  await logActivity({
+    companyId: profile?.company_id ?? null,
+    actorId: userId,
+    action: 'task.deleted',
+    entityType: 'task',
+    entityId: taskId,
+  });
   revalidatePath(`/dashboard/projects/${projectId}`);
 }
 
 export async function addComment(taskId: string, projectId: string, formData: FormData) {
   const body = String(formData.get('body') ?? '').trim();
   if (!body) return;
-  const { userId } = await getCurrentProfile();
+  const { profile, userId } = await getCurrentProfile();
   const supabase = createClient();
   await supabase.from('task_comments').insert({ task_id: taskId, author_id: userId, body });
+  await logActivity({
+    companyId: profile?.company_id ?? null,
+    actorId: userId,
+    action: 'task.commented',
+    entityType: 'task',
+    entityId: taskId,
+  });
   revalidatePath(`/dashboard/projects/${projectId}`);
 }
 

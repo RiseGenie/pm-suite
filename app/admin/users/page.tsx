@@ -1,10 +1,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
-import { inviteMember, toggleMemberActive } from './actions';
+import { inviteMember, toggleMemberActive, updateMemberRole } from './actions';
 import { SubmitButton } from '@/components/SubmitButton';
+import { RoleSelect } from '@/components/RoleSelect';
+
+const ROLE_OPTIONS = [
+  { value: 'member', label: 'Member' },
+  { value: 'company_admin', label: 'Company admin' },
+];
 
 export default async function TeamPage() {
-  const { profile } = await getCurrentProfile();
+  const { profile, userId } = await getCurrentProfile();
   const supabase = createClient();
 
   const [{ data: members }, { data: invites }] = await Promise.all([
@@ -30,17 +36,27 @@ export default async function TeamPage() {
           <div className="space-y-2">
             {members?.map((m) => {
               const toggle = toggleMemberActive.bind(null, m.id, m.is_active);
+              const isSelf = m.id === userId;
               return (
-                <div key={m.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
-                  <div>
-                    <p className="font-medium">{m.full_name ?? 'Unnamed user'}</p>
-                    <span className="badge bg-slate-100 text-slate-600">{m.role}</span>
+                <div key={m.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0 gap-3">
+                  <p className="font-medium truncate">{m.full_name ?? 'Unnamed user'}</p>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <RoleSelect
+                      action={updateMemberRole.bind(null, m.id)}
+                      currentRole={m.role}
+                      options={ROLE_OPTIONS}
+                      disabled={isSelf}
+                    />
+                    <form action={toggle}>
+                      <SubmitButton
+                        className="text-xs text-muted hover:text-danger"
+                        pendingText="Updating…"
+                        disabled={isSelf}
+                      >
+                        {m.is_active ? 'Deactivate' : 'Activate'}
+                      </SubmitButton>
+                    </form>
                   </div>
-                  <form action={toggle}>
-                    <SubmitButton className="text-xs text-muted hover:text-danger" pendingText="Updating…">
-                      {m.is_active ? 'Deactivate' : 'Activate'}
-                    </SubmitButton>
-                  </form>
                 </div>
               );
             })}

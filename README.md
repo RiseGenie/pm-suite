@@ -27,6 +27,12 @@ Multi-tenant project management platform with three tiers of access:
   protected by Postgres Row Level Security, so one company can never see another's data
 - `invites` — company admins/owner invite people by email; the invitee sets their password at
   `/join/[token]` and lands with the right role + company already attached
+- `activity_log` — every meaningful action (task/project created, roles changed, invites,
+  company suspended, bug reported, …) is recorded here and surfaced in the owner's activity feed
+- `bug_reports` — company admins file bugs at `/admin/support`; they're emailed to the owner
+  immediately and tracked to resolution at `/super-admin/bug-reports`
+- `company_stats` (view) — per-company rollup (users/projects/tasks/completion/open bugs/last
+  activity) powering the owner's overview table and the report generator
 
 **The first account ever created becomes the owner (`super_admin`)** automatically (see the
 `handle_new_user` trigger in `supabase/migrations/004_bootstrap_and_invites.sql`). Everyone else
@@ -52,6 +58,22 @@ Deployed on Vercel. Required environment variables:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `RESEND_API_KEY` — invite emails, bug report notifications, and platform reports
+- `OWNER_EMAIL` — where bug reports and the on-demand report default to (falls back to a
+  hardcoded address if unset)
+- `SUPABASE_SERVICE_ROLE_KEY` — **only** used server-side by the scheduled weekly report
+  (`app/api/cron/weekly-report`), since that job runs with no logged-in user and needs to read
+  across every company. Never exposed to the client.
+- `CRON_SECRET` — optional; if set, Vercel Cron automatically sends it as a Bearer token and the
+  route verifies it before running
+
+## Reporting
+
+- **On demand:** `/super-admin/reports` renders the full platform report (totals, per-company
+  breakdown, recent bug reports) live, with an "Email this report to me" button.
+- **Automatic:** `vercel.json` schedules `GET /api/cron/weekly-report` every Monday at 13:00 UTC,
+  which emails the same report to `OWNER_EMAIL`. Requires `SUPABASE_SERVICE_ROLE_KEY` to be set
+  in Vercel — without it the route no-ops safely and logs why.
 
 ## Known follow-ups
 

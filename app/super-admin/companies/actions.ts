@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { siteOrigin } from '@/lib/site';
 import { sendInviteEmail } from '@/lib/email';
+import { logActivity } from '@/lib/activity';
 
 function slugify(name: string) {
   return name
@@ -36,6 +37,15 @@ export async function createCompany(formData: FormData) {
 
   await supabase.from('company_themes').insert({ company_id: company.id });
 
+  await logActivity({
+    companyId: company.id,
+    actorId: user?.id ?? null,
+    action: 'company.created',
+    entityType: 'company',
+    entityId: company.id,
+    metadata: { name },
+  });
+
   if (adminEmail) {
     const { data: invite } = await supabase
       .from('invites')
@@ -65,8 +75,36 @@ export async function createCompany(formData: FormData) {
 export async function toggleCompanyActive(companyId: string, isActive: boolean) {
   'use server';
   const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   await supabase.from('companies').update({ is_active: !isActive }).eq('id', companyId);
+  await logActivity({
+    companyId,
+    actorId: user?.id ?? null,
+    action: isActive ? 'company.suspended' : 'company.reactivated',
+    entityType: 'company',
+    entityId: companyId,
+  });
   revalidatePath('/super-admin/companies');
+  revalidatePath(`/super-admin/companies/${companyId}`);
+}
+
+export async function changeUserRole(userIdToChange: string, companyId: string, formData: FormData) {
+  const role = String(formData.get('role') ?? 'member') as 'member' | 'company_admin';
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  await supabase.from('profiles').update({ role }).eq('id', userIdToChange);
+  await logActivity({
+    companyId,
+    actorId: user?.id ?? null,
+    action: 'member.role_changed',
+    entityType: 'profile',
+    entityId: userIdToChange,
+    metadata: { role },
+  });
   revalidatePath(`/super-admin/companies/${companyId}`);
 }
 
@@ -98,6 +136,14 @@ export async function inviteCompanyAdmin(companyId: string, formData: FormData) 
       companyName: company.name,
       role: 'company_admin',
       joinUrl: `${siteOrigin()}/join/${invite.token}`,
+    });
+    await logActivity({
+      companyId,
+      actorId: user?.id ?? null,
+      action: 'admin.invited',
+      entityType: 'invite',
+      entityId: invite.id,
+      metadata: { email },
     });
   }
 

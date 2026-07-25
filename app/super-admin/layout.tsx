@@ -3,6 +3,8 @@ import { Sidebar } from '@/components/Sidebar';
 const LINKS = [
   { href: '/super-admin', label: 'Overview' },
   { href: '/super-admin/companies', label: 'Companies' },
+  { href: '/super-admin/bug-reports', label: 'Bug reports' },
+  { href: '/super-admin/reports', label: 'Reports' },
 ];
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {

@@ -24,6 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           { href: '/admin', label: 'Admin dashboard' },
           { href: '/admin/users', label: 'Team' },
           { href: '/admin/theme', label: 'Theme customizer' },
+          { href: '/admin/support', label: 'Report a bug' },
         ]
       : []),
   ];

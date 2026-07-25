@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
 import { siteOrigin } from '@/lib/site';
 import { sendInviteEmail } from '@/lib/email';
+import { logActivity } from '@/lib/activity';
 
 export async function inviteMember(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim();
@@ -36,21 +37,46 @@ export async function inviteMember(formData: FormData) {
       role,
       joinUrl: `${siteOrigin()}/join/${invite.token}`,
     });
+    await logActivity({
+      companyId: profile.company_id,
+      actorId: userId,
+      action: 'member.invited',
+      entityType: 'invite',
+      entityId: invite.id,
+      metadata: { email, role },
+    });
   }
 
   revalidatePath('/admin/users');
 }
 
-export async function updateMemberRole(memberId: string, role: 'member' | 'company_admin') {
-  'use server';
+export async function updateMemberRole(memberId: string, formData: FormData) {
+  const role = String(formData.get('role') ?? 'member') as 'member' | 'company_admin';
+  const { profile, userId } = await getCurrentProfile();
   const supabase = createClient();
   await supabase.from('profiles').update({ role }).eq('id', memberId);
+  await logActivity({
+    companyId: profile?.company_id ?? null,
+    actorId: userId,
+    action: 'member.role_changed',
+    entityType: 'profile',
+    entityId: memberId,
+    metadata: { role },
+  });
   revalidatePath('/admin/users');
 }
 
 export async function toggleMemberActive(memberId: string, isActive: boolean) {
   'use server';
+  const { profile, userId } = await getCurrentProfile();
   const supabase = createClient();
   await supabase.from('profiles').update({ is_active: !isActive }).eq('id', memberId);
+  await logActivity({
+    companyId: profile?.company_id ?? null,
+    actorId: userId,
+    action: isActive ? 'member.deactivated' : 'member.activated',
+    entityType: 'profile',
+    entityId: memberId,
+  });
   revalidatePath('/admin/users');
 }

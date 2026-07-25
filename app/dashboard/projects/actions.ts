@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function createProject(formData: FormData) {
   const name = String(formData.get('name') ?? '').trim();
@@ -22,6 +23,15 @@ export async function createProject(formData: FormData) {
     .single();
 
   if (error || !project) return;
+
+  await logActivity({
+    companyId: profile.company_id,
+    actorId: userId,
+    action: 'project.created',
+    entityType: 'project',
+    entityId: project.id,
+    metadata: { name },
+  });
 
   revalidatePath('/dashboard/projects');
   redirect(`/dashboard/projects/${project.id}`);

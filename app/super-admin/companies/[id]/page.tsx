@@ -1,9 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
-import { inviteCompanyAdmin, toggleCompanyActive, cancelInvite, resendInvite } from '../actions';
+import { inviteCompanyAdmin, toggleCompanyActive, cancelInvite, resendInvite, changeUserRole } from '../actions';
 import { updateCompanyTheme } from '@/app/_actions/theme';
 import { ThemeCustomizerForm } from '@/components/ThemeCustomizerForm';
 import { SubmitButton } from '@/components/SubmitButton';
+import { RoleSelect } from '@/components/RoleSelect';
 import type { CompanyTheme } from '@/lib/types';
+
+const ROLE_OPTIONS = [
+  { value: 'member', label: 'Member' },
+  { value: 'company_admin', label: 'Company admin' },
+];
 
 export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -40,9 +46,13 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
           <h2 className="font-semibold mb-3">Team ({members?.length ?? 0})</h2>
           <div className="space-y-2">
             {members?.map((m) => (
-              <div key={m.id} className="flex items-center justify-between text-sm py-1 border-b last:border-0">
-                <span>{m.full_name ?? 'Unnamed user'}</span>
-                <span className="badge bg-slate-100 text-slate-600">{m.role}</span>
+              <div key={m.id} className="flex items-center justify-between text-sm py-1 border-b last:border-0 gap-3">
+                <span className="truncate">{m.full_name ?? 'Unnamed user'}</span>
+                <RoleSelect
+                  action={changeUserRole.bind(null, m.id, company.id)}
+                  currentRole={m.role}
+                  options={ROLE_OPTIONS}
+                />
               </div>
             ))}
             {!members?.length && <p className="text-sm text-muted">No members yet.</p>}
