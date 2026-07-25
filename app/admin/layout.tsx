@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     supabase.from('platform_settings').select('*').eq('id', true).single(),
   ]);
 
-  const timezone = theme?.timezone || platformSettings?.timezone || 'UTC';
+  const timezone = profile.timezone || theme?.timezone || platformSettings?.timezone || 'UTC';
 
   return (
     <div className="flex">
@@ -35,7 +35,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         agencyLogoUrl={platformSettings?.logo_url}
         companyLogoUrl={theme?.logo_url}
       />
-      <DashboardMain timezone={timezone}>{children}</DashboardMain>
+      <DashboardMain timezone={timezone} myTimezone={profile.timezone}>
+        {children}
+      </DashboardMain>
     </div>
   );
 }

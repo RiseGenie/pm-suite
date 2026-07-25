@@ -46,10 +46,12 @@ Multi-tenant project management platform with three tiers of access:
 - `platform_settings` — a single-row table for the owner's own "agency" branding (logo + default
   timezone), readable by everyone (so it can appear alongside each company's logo) but only
   writable by the owner, at `/super-admin/settings`
-- `company_themes.timezone` — each company sets its own timezone in its theme customizer; every
-  layout shows a live clock (top-right) using the company's timezone, falling back to the agency
-  default. Both the agency logo and the company's own logo render together top-left in the
-  sidebar; logos upload to the public `branding` storage bucket
+- `company_themes.timezone` — each company sets its own timezone in its theme customizer, used
+  as that company's default clock. Both the agency logo and the company's own logo render
+  together top-left in the sidebar; logos upload to the public `branding` storage bucket
+- `profiles.timezone` — any individual user (member, company admin, or owner) can override the
+  company/agency default with their own personal timezone via the small selector next to the live
+  clock, top-right of every screen. Precedence: personal → company → agency default → UTC
 
 **The first account ever created becomes the owner (`super_admin`)** automatically (see the
 `handle_new_user` trigger in `supabase/migrations/004_bootstrap_and_invites.sql`). Everyone else

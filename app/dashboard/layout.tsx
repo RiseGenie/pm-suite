@@ -33,7 +33,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       : []),
   ];
 
-  const timezone = theme?.timezone || platformSettings?.timezone || 'UTC';
+  const timezone = profile.timezone || theme?.timezone || platformSettings?.timezone || 'UTC';
 
   return (
     <div className="flex">
@@ -44,7 +44,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         agencyLogoUrl={platformSettings?.logo_url}
         companyLogoUrl={theme?.logo_url}
       />
-      <DashboardMain timezone={timezone}>{children}</DashboardMain>
+      <DashboardMain timezone={timezone} myTimezone={profile.timezone}>
+        {children}
+      </DashboardMain>
     </div>
   );
 }
