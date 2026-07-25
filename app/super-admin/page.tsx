@@ -22,27 +22,31 @@ const ACTION_LABELS: Record<string, string> = {
 export default async function SuperAdminOverview() {
   const supabase = createClient();
 
-  const [{ count: companyCount }, { count: userCount }, { count: projectCount }, { count: taskCount }, { data: companyStats }, { data: recentActivity }, { count: openBugCount }] =
-    await Promise.all([
-      supabase.from('companies').select('*', { count: 'exact', head: true }),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }),
-      supabase.from('projects').select('*', { count: 'exact', head: true }),
-      supabase.from('tasks').select('*', { count: 'exact', head: true }),
-      supabase.from('company_stats').select('*').order('created_at', { ascending: false }),
-      supabase
-        .from('activity_log')
-        .select('*, actor:profiles(full_name), company:companies(name)')
-        .order('created_at', { ascending: false })
-        .limit(25),
-      supabase.from('bug_reports').select('*', { count: 'exact', head: true }).neq('status', 'resolved'),
-    ]);
+  const [{ data: companyStats }, { data: recentActivity }] = await Promise.all([
+    supabase.from('company_stats').select('*').order('created_at', { ascending: false }),
+    supabase
+      .from('activity_log')
+      .select('*, actor:profiles(full_name), company:companies(name)')
+      .order('created_at', { ascending: false })
+      .limit(25),
+  ]);
+
+  const totals = (companyStats ?? []).reduce(
+    (acc, c) => ({
+      users: acc.users + c.user_count,
+      projects: acc.projects + c.project_count,
+      tasks: acc.tasks + c.task_count,
+      openBugs: acc.openBugs + c.open_bug_count,
+    }),
+    { users: 0, projects: 0, tasks: 0, openBugs: 0 }
+  );
 
   const stats = [
-    { label: 'Companies', value: companyCount ?? 0 },
-    { label: 'Users', value: userCount ?? 0 },
-    { label: 'Projects', value: projectCount ?? 0 },
-    { label: 'Tasks', value: taskCount ?? 0 },
-    { label: 'Open bugs', value: openBugCount ?? 0 },
+    { label: 'Companies', value: companyStats?.length ?? 0 },
+    { label: 'Users', value: totals.users },
+    { label: 'Projects', value: totals.projects },
+    { label: 'Tasks', value: totals.tasks },
+    { label: 'Open bugs', value: totals.openBugs },
   ];
 
   return (

@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && (path.startsWith('/super-admin') || path.startsWith('/admin') || path.startsWith('/dashboard'))) {
+  if (user && (path.startsWith('/super-admin') || path.startsWith('/admin'))) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
