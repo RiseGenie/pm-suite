@@ -103,3 +103,36 @@ export async function inviteCompanyAdmin(companyId: string, formData: FormData) 
 
   revalidatePath(`/super-admin/companies/${companyId}`);
 }
+
+export async function cancelInvite(inviteId: string, companyId: string) {
+  'use server';
+  const supabase = createClient();
+  await supabase.from('invites').delete().eq('id', inviteId);
+  revalidatePath(`/super-admin/companies/${companyId}`);
+}
+
+export async function resendInvite(inviteId: string, companyId: string) {
+  'use server';
+  const supabase = createClient();
+
+  const { data: invite } = await supabase
+    .from('invites')
+    .update({ token: crypto.randomUUID() })
+    .eq('id', inviteId)
+    .select()
+    .single();
+
+  if (!invite) return;
+
+  const { data: company } = await supabase.from('companies').select('name').eq('id', companyId).single();
+  if (company) {
+    await sendInviteEmail({
+      to: invite.email,
+      companyName: company.name,
+      role: invite.role,
+      joinUrl: `${siteOrigin()}/join/${invite.token}`,
+    });
+  }
+
+  revalidatePath(`/super-admin/companies/${companyId}`);
+}

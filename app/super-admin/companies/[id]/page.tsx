@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { inviteCompanyAdmin, toggleCompanyActive } from '../actions';
+import { inviteCompanyAdmin, toggleCompanyActive, cancelInvite, resendInvite } from '../actions';
 import { updateCompanyTheme } from '@/app/_actions/theme';
 import { ThemeCustomizerForm } from '@/components/ThemeCustomizerForm';
 import type { CompanyTheme } from '@/lib/types';
@@ -56,15 +56,32 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
               Send invite
             </button>
           </form>
-          <div className="mt-4 space-y-1">
+          <div className="mt-4 space-y-2">
             {invites?.map((i) => (
-              <div key={i.id} className="flex items-center justify-between text-xs py-1">
-                <span>{i.email}</span>
-                <span className={`badge ${i.accepted_at ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {i.accepted_at ? 'Accepted' : 'Pending'}
-                </span>
+              <div key={i.id} className="flex items-center justify-between text-xs py-1 gap-2">
+                <span className="truncate">{i.email}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`badge ${i.accepted_at ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {i.accepted_at ? 'Accepted' : 'Pending'}
+                  </span>
+                  {!i.accepted_at && (
+                    <>
+                      <form action={resendInvite.bind(null, i.id, company.id)}>
+                        <button className="text-muted hover:text-primary" type="submit">
+                          Resend
+                        </button>
+                      </form>
+                      <form action={cancelInvite.bind(null, i.id, company.id)}>
+                        <button className="text-muted hover:text-danger" type="submit">
+                          Cancel
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
+            {!invites?.length && <p className="text-muted">No invites sent yet.</p>}
           </div>
         </div>
       </div>
