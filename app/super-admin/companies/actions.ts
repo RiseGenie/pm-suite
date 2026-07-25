@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { siteOrigin } from '@/lib/site';
+import { sendInviteEmail } from '@/lib/email';
 
 function slugify(name: string) {
   return name
@@ -35,12 +37,25 @@ export async function createCompany(formData: FormData) {
   await supabase.from('company_themes').insert({ company_id: company.id });
 
   if (adminEmail) {
-    await supabase.from('invites').insert({
-      company_id: company.id,
-      email: adminEmail,
-      role: 'company_admin',
-      invited_by: user?.id,
-    });
+    const { data: invite } = await supabase
+      .from('invites')
+      .insert({
+        company_id: company.id,
+        email: adminEmail,
+        role: 'company_admin',
+        invited_by: user?.id,
+      })
+      .select()
+      .single();
+
+    if (invite) {
+      await sendInviteEmail({
+        to: adminEmail,
+        companyName: company.name,
+        role: 'company_admin',
+        joinUrl: `${siteOrigin()}/join/${invite.token}`,
+      });
+    }
   }
 
   revalidatePath('/super-admin/companies');
@@ -63,11 +78,28 @@ export async function inviteCompanyAdmin(companyId: string, formData: FormData) 
     data: { user },
   } = await supabase.auth.getUser();
 
-  await supabase.from('invites').insert({
-    company_id: companyId,
-    email,
-    role: 'company_admin',
-    invited_by: user?.id,
-  });
+  const [{ data: invite }, { data: company }] = await Promise.all([
+    supabase
+      .from('invites')
+      .insert({
+        company_id: companyId,
+        email,
+        role: 'company_admin',
+        invited_by: user?.id,
+      })
+      .select()
+      .single(),
+    supabase.from('companies').select('name').eq('id', companyId).single(),
+  ]);
+
+  if (invite && company) {
+    await sendInviteEmail({
+      to: email,
+      companyName: company.name,
+      role: 'company_admin',
+      joinUrl: `${siteOrigin()}/join/${invite.token}`,
+    });
+  }
+
   revalidatePath(`/super-admin/companies/${companyId}`);
 }

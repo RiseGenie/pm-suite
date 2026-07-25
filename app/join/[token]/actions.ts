@@ -1,15 +1,8 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-
-function siteOrigin() {
-  const h = headers();
-  const proto = h.get('x-forwarded-proto') ?? 'https';
-  const host = h.get('x-forwarded-host') ?? h.get('host');
-  return `${proto}://${host}`;
-}
+import { siteOrigin } from '@/lib/site';
 
 export async function acceptInvite(token: string, formData: FormData) {
   const fullName = String(formData.get('full_name') ?? '');

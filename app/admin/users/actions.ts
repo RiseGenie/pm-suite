@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentProfile } from '@/lib/auth';
+import { siteOrigin } from '@/lib/site';
+import { sendInviteEmail } from '@/lib/email';
 
 export async function inviteMember(formData: FormData) {
   const email = String(formData.get('email') ?? '').trim();
@@ -13,12 +15,28 @@ export async function inviteMember(formData: FormData) {
   if (!profile?.company_id) return;
 
   const supabase = createClient();
-  await supabase.from('invites').insert({
-    company_id: profile.company_id,
-    email,
-    role,
-    invited_by: userId,
-  });
+  const [{ data: invite }, { data: company }] = await Promise.all([
+    supabase
+      .from('invites')
+      .insert({
+        company_id: profile.company_id,
+        email,
+        role,
+        invited_by: userId,
+      })
+      .select()
+      .single(),
+    supabase.from('companies').select('name').eq('id', profile.company_id).single(),
+  ]);
+
+  if (invite && company) {
+    await sendInviteEmail({
+      to: email,
+      companyName: company.name,
+      role,
+      joinUrl: `${siteOrigin()}/join/${invite.token}`,
+    });
+  }
 
   revalidatePath('/admin/users');
 }
