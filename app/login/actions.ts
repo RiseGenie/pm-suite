@@ -36,6 +36,22 @@ export async function bootstrapSignUp(formData: FormData) {
   redirect('/login?message=Check your email to confirm your account, then sign in.');
 }
 
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get('email') ?? '');
+  const supabase = createClient();
+
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteOrigin()}/auth/callback?next=${encodeURIComponent('/account/password')}`,
+  });
+
+  // Always show the same message, whether or not the email exists, so we never reveal
+  // which addresses have accounts.
+  redirect(
+    '/forgot-password?message=' +
+      encodeURIComponent('If an account exists for that email, a reset link is on its way.')
+  );
+}
+
 export async function signOut() {
   const supabase = createClient();
   await supabase.auth.signOut();

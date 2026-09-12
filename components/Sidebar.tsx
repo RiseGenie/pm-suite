@@ -52,11 +52,19 @@ export function Sidebar({
           ))}
         </nav>
       </div>
-      <form action={signOut}>
-        <button className="w-full text-left px-3 py-2 rounded-theme text-sm opacity-80 hover:opacity-100 hover:bg-white/10">
-          Sign out
-        </button>
-      </form>
+      <div>
+        <Link
+          href="/account/password"
+          className="block px-3 py-2 rounded-theme text-sm opacity-80 hover:opacity-100 hover:bg-white/10"
+        >
+          Change password
+        </Link>
+        <form action={signOut}>
+          <button className="w-full text-left px-3 py-2 rounded-theme text-sm opacity-80 hover:opacity-100 hover:bg-white/10">
+            Sign out
+          </button>
+        </form>
+      </div>
     </aside>
   );
 }
