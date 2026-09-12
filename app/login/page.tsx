@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { login, bootstrapSignUp } from './actions';
 
 export default function LoginPage({
@@ -36,6 +37,11 @@ export default function LoginPage({
           <button className="btn btn-primary w-full" type="submit">
             Sign in
           </button>
+          <p className="text-sm text-center">
+            <Link href="/forgot-password" className="underline text-slate-500">
+              Forgot your password?
+            </Link>
+          </p>
         </form>
 
         <details className="text-sm text-slate-500">

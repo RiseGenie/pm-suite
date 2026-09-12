@@ -1,0 +1,36 @@
+'use server';
+
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+
+export async function updatePassword(formData: FormData) {
+  const password = String(formData.get('password') ?? '');
+  const confirmPassword = String(formData.get('confirm_password') ?? '');
+
+  if (password.length < 6) {
+    redirect('/account/password?error=' + encodeURIComponent('Password must be at least 6 characters.'));
+  }
+  if (password !== confirmPassword) {
+    redirect('/account/password?error=' + encodeURIComponent('Passwords do not match.'));
+  }
+
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(
+      '/login?error=' +
+        encodeURIComponent('Your reset link has expired. Please request a new one.')
+    );
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    redirect('/account/password?error=' + encodeURIComponent(error.message));
+  }
+
+  redirect('/account/password?message=' + encodeURIComponent('Your password has been updated.'));
+}
